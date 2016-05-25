@@ -8,7 +8,6 @@ var sequence = require('gulp-sequence');
 var watch = require('gulp-watch');
 var liveReload = require('gulp-livereload');
 //var exec = require('child_process').exec;
-var execCmd = require('./../common/cmd/execCmd.js');
 var mocha = require('gulp-mocha');
 var jasmine = require('gulp-jasmine');
 
@@ -19,15 +18,14 @@ var cacheManager = require('./cacheManager.js');
 gulp = help(gulp);
 
 module.exports = {
-	gulp: gulp,
-	debug: debug,
-	sequence: sequence.use(gulp),
-	liveReload: liveReload,
-	watch: watch,
-	config: config,
-	cacheManager: cacheManager,
-	//exec: exec,
-	execCmd: execCmd,
-	mocha: mocha,
-	jasmine: jasmine
+    gulp: gulp,
+    debug: debug,
+    sequence: sequence.use(gulp),
+    liveReload: liveReload,
+    watch: watch,
+    config: config,
+    cacheManager: cacheManager,
+    //exec: exec,
+    mocha: mocha,
+    jasmine: jasmine
 };
