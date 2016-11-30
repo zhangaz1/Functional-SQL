@@ -79,9 +79,7 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function doGroup() {
-		if(this.groupBys.length > 0) {
-			this.result = group(this.result, this.groupBys);
-		}
+		this.result = group(this.result, this.groupBys);
 	}
 
 	function having() {}
@@ -96,12 +94,68 @@ function buildFunctionalSQLPrototype() {
 
 }
 
-function group(data, groupBys) {
-	return data;
+function group(datas, groupBys) {
+	if(groupBys.length < 1) {
+		return datas;
+	}
+
+	var groupObjects = groupToGroupObjects(datas, groupBys);
+	return convertToResult(groupObjects);
+}
+
+function convertToResult(groupObjects) {
+	var container = new ConvertContainer();
+
+	groupObjects.forEach(function(groupObject) {
+		let currentContainer = container;
+
+		groupObject.groups.forEach(function(group) {
+			let nextContainer = currentContainer[group];
+			if(!nextContainer) {
+				nextContainer =
+					currentContainer[group] = new ConvertContainer();
+
+				currentContainer.result.push([group, nextContainer.result]);
+			}
+			currentContainer = nextContainer;
+		});
+
+		currentContainer.result.push(groupObject.data);
+	});
+
+	return container.result;
+}
+
+function ConvertContainer() {
+	return {
+		dic: createEmptyDic(),
+		result: [],
+	};
+}
+
+function groupToGroupObjects(datas, groupBys) {
+	return datas.map(function(data) {
+		var groupObject = new GroupObject(data);
+
+		groupBys.forEach(function(groupBy) {
+			groupObject.groups.push(groupBy(data));
+		});
+
+		return groupObject;
+	});
+}
+
+function GroupObject(data) {
+	this.data = data;
+	this.groups = [];
 }
 
 function isFunction(fun) {
 	return Object.prototype.toString.call(fun) === '[object Function]';
+}
+
+function createEmptyDic() {
+	return Object.create(null);
 }
 
 function argumentsToArray(args) {
