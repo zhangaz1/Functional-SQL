@@ -45,6 +45,8 @@ function buildFunctionalSQLPrototype() {
 		if(isFunction(selector)) {
 			this.selector = selector;
 		}
+
+		this.select = createDuplicateCallErrorHandler('SELECT');
 	}
 
 	function doSelect() {
@@ -56,6 +58,8 @@ function buildFunctionalSQLPrototype() {
 	function from() {
 		this.result =
 			this.sources = argumentsToArray(arguments);
+
+		this.from = createDuplicateCallErrorHandler('FROM');
 	}
 
 	function where(filter) {
@@ -70,12 +74,16 @@ function buildFunctionalSQLPrototype() {
 		}, this);
 	}
 
-	function orderBy() {}
+	function orderBy() {
+		this.orderBy = createDuplicateCallErrorHandler('ORDERBY');
+	}
 
 	function groupBy(groupBy) {
 		if(isFunction(groupBy)) {
 			this.groupBys.push(groupBy);
 		}
+
+		this.groupBy = createDuplicateCallErrorHandler('GROUPBY');
 	}
 
 	function doGroup() {
@@ -92,6 +100,11 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+	function createDuplicateCallErrorHandler(key) {
+		return function() {
+			throw new Error(key);
+		}
+	}
 }
 
 function group(datas, groupBys) {
