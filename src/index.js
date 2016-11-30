@@ -59,14 +59,23 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function from() {
+		var sources = argumentsToArray(arguments);
 		this.result =
-			this.sources = argumentsToArray(arguments);
+			this.sources = (
+				sources.length === 1 ?
+				sources[0] :
+				sources
+			);
 	}
 
-	function where(filter) {
-		if(isFunction(filter)) {
-			this.filters.push(filter);
-		}
+	function where() {
+		var filters = getMethodsFromArguments(arguments);
+
+		filters.forEach(function(filter) {
+			if(isFunction(filter)) {
+				this.filters.push(filter);
+			}
+		}, this);
 	}
 
 	function doFilter() {
@@ -80,9 +89,13 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function groupBy(groupBy) {
-		if(isFunction(groupBy)) {
-			this.groupBys.push(groupBy);
-		}
+		var groupBys = getMethodsFromArguments(arguments);
+
+		groupBys.forEach(function(groupBy) {
+			if(isFunction(groupBy)) {
+				this.groupBys.push(groupBy);
+			}
+		}, this);
 	}
 
 	function doGroup() {
@@ -99,6 +112,10 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+}
+
+function getMethodsFromArguments(args) {
+	return argumentsToArray(args);
 }
 
 function group(datas, groupBys) {
@@ -166,9 +183,7 @@ function createEmptyDic() {
 }
 
 function argumentsToArray(args) {
-	return args.length === 1 ?
-		args[0] :
-		Array.prototype.slice.call(args);
+	return Array.prototype.slice.call(args);
 }
 
 function chinify(obj, methodName) {
