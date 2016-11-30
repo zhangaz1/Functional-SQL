@@ -86,8 +86,8 @@ function buildFunctionalSQLPrototype() {
 
 	function execute() {
 		this.doFilter();
-		this.doSelect();
 		this.doGroup();
+		this.doSelect();
 
 		return this.result;
 	}
