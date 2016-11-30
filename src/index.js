@@ -1,5 +1,6 @@
-var chainMethods = 'select,from,where,orderBy,groupBy,having'.split(',');
-
+var splitor = ',';
+var chainMethods = 'select,from,where,orderBy,groupBy,having'.split(splitor);
+var onceMethods = 'select,from,orderBy,groupBy,having'.split(splitor);
 
 buildFunctionalSQLPrototype();
 
@@ -36,7 +37,11 @@ function buildFunctionalSQLPrototype() {
 	proto.execute = execute;
 
 	chainMethods.forEach(function(methodName) {
-		chinify(FunctionalSQL.prototype, methodName);
+		chinify(proto, methodName);
+	});
+
+	onceMethods.forEach(function(methodName) {
+		onceify(proto, methodName);
 	});
 
 	return void(0);
@@ -45,8 +50,6 @@ function buildFunctionalSQLPrototype() {
 		if(isFunction(selector)) {
 			this.selector = selector;
 		}
-
-		this.select = createDuplicateCallErrorHandler('SELECT');
 	}
 
 	function doSelect() {
@@ -58,8 +61,6 @@ function buildFunctionalSQLPrototype() {
 	function from() {
 		this.result =
 			this.sources = argumentsToArray(arguments);
-
-		this.from = createDuplicateCallErrorHandler('FROM');
 	}
 
 	function where(filter) {
@@ -75,15 +76,13 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function orderBy() {
-		this.orderBy = createDuplicateCallErrorHandler('ORDERBY');
+
 	}
 
 	function groupBy(groupBy) {
 		if(isFunction(groupBy)) {
 			this.groupBys.push(groupBy);
 		}
-
-		this.groupBy = createDuplicateCallErrorHandler('GROUPBY');
 	}
 
 	function doGroup() {
@@ -100,11 +99,6 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
-	function createDuplicateCallErrorHandler(key) {
-		return function() {
-			throw new Error(key);
-		}
-	}
 }
 
 function group(datas, groupBys) {
@@ -185,6 +179,24 @@ function chinify(obj, methodName) {
 	function wrap() {
 		wrap.origin.apply(this, arguments);
 		return this;
+	}
+}
+
+function onceify(obj, methodName) {
+	wrap.origin = obj[methodName];
+	obj[methodName] = wrap;
+	return void(0);
+
+	function wrap() {
+		var result = wrap.origin.apply(this, arguments);
+		this[methodName] = createDuplicateCallErrorHandler(methodName.toUpperCase());
+		return result;
+	}
+}
+
+function createDuplicateCallErrorHandler(key) {
+	return function() {
+		throw new Error(key);
 	}
 }
 
