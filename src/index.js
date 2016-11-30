@@ -12,6 +12,7 @@ function FunctionalSQL() {
 	this.sources = [];
 	this.selector = null;
 	this.filters = [];
+	this.havings = [];
 	this.groupBys = [];
 	this.orderByor = null;
 	this.result = [];
@@ -35,6 +36,7 @@ function buildFunctionalSQLPrototype() {
 	proto.doGroup = doGroup;
 
 	proto.having = having;
+	proto.doHaving = doHaving;
 
 	proto.execute = execute;
 
@@ -112,11 +114,26 @@ function buildFunctionalSQLPrototype() {
 		this.result = group(this.result, this.groupBys);
 	}
 
-	function having() {}
+	function having() {
+		var havings = getMethodsFromArguments(arguments);
+
+		havings.forEach(function(having) {
+			if(isFunction(having)) {
+				this.havings.push(having);
+			}
+		}, this);
+	}
+
+	function doHaving() {
+		this.havings.forEach(function(having) {
+			this.result = this.result.filter(having);
+		}, this);
+	}
 
 	function execute() {
 		this.doFilter();
 		this.doGroup();
+		this.doHaving();
 		this.doSelect();
 		this.doOrderBy();
 
