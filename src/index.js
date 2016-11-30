@@ -11,6 +11,7 @@ function FunctionalSQL() {
 	this.sources = [];
 	this.selector = null;
 	this.filters = [];
+	this.groupBys = [];
 	this.result = [];
 }
 
@@ -30,7 +31,9 @@ function buildFunctionalSQLPrototype() {
 	return void(0);
 
 	function select(selector) {
-		this.selector = selector;
+		if(isFunction(selector)) {
+			this.selector = selector;
+		}
 	}
 
 	function from() {
@@ -39,14 +42,18 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function where(filter) {
-		if(filter) { // is function check
+		if(isFunction(filter)) {
 			this.filters.push(filter);
 		}
 	}
 
 	function orderBy() {}
 
-	function groupBy() {}
+	function groupBy(groupBy) {
+		if(isFunction(groupBy)) {
+			this.groupBys.push(groupBy);
+		}
+	}
 
 	function having() {}
 
@@ -62,6 +69,10 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+}
+
+function isFunction(fun) {
+	return Object.prototype.toString.call(fun) === '[object Function]';
 }
 
 function argumentsToArray(args) {
