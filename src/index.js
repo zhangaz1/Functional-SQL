@@ -67,19 +67,20 @@ function buildFunctionalSQLPrototype() {
 		this.result =
 			this.sources = (
 				sources.length === 1 ?
-				sources[0] :
+				sources[0].slice() :
 				sources
 			);
 	}
 
 	function where() {
 		var filters = getMethodsFromArguments(arguments);
+		if(filters.length > 0) {
+			var filter = filters.length === 1 ?
+				filters[0] :
+				mergeFilters(filters);
 
-		filters.forEach(function(filter) {
-			if(isFunction(filter)) {
-				this.filters.push(filter);
-			}
-		}, this);
+			this.filters.push(filter);
+		}
 	}
 
 	function doFilter() {
@@ -140,6 +141,17 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+}
+
+function mergeFilters(filters) {
+	return function() {
+		for(var i = 0; i < filters.length; i++) {
+			if(filters[i].apply(null, arguments)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 function getMethodsFromArguments(args) {
