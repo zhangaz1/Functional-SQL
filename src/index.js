@@ -251,7 +251,7 @@ function onceify(obj, methodName) {
 
 function createDuplicateCallErrorHandler(key) {
 	return function() {
-		throw new Error(key);
+		throw new Error('Duplicate ' + key);
 	}
 }
 
