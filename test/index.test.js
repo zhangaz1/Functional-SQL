@@ -562,7 +562,6 @@ Test.describe("SQL tests", function() {
 			"studentName": "Michael",
 			"teacherName": "Peter"
 		}, {
-			"studentName": "Rose",
 			"teacherName": "Anna"
 		}]);
 

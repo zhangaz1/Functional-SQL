@@ -9,6 +9,7 @@ var query = createQuery;
 
 function FunctionalSQL() {
 	this.sources = [];
+	this.selector = null;
 	this.result = [];
 }
 
@@ -27,10 +28,13 @@ function buildFunctionalSQLPrototype() {
 
 	return void(0);
 
-	function select() {}
+	function select(selector) {
+		this.selector = selector;
+	}
 
 	function from() {
-		this.sources = argumentsToArray(arguments);
+		this.result =
+			this.sources = argumentsToArray(arguments);
 	}
 
 	function where() {}
@@ -42,13 +46,19 @@ function buildFunctionalSQLPrototype() {
 	function having() {}
 
 	function execute() {
+		if(this.selector) {
+			this.result = this.result.map(this.selector);
+		}
+
 		return this.result;
 	}
 
 }
 
 function argumentsToArray(args) {
-	return Array.prototype.slice.call(args);
+	return args.length === 1 ?
+		args[0] :
+		Array.prototype.slice.call(args);
 }
 
 function chinify(obj, methodName) {
