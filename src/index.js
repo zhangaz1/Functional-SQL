@@ -8,7 +8,7 @@ var query = createQuery;
 // return void(0);
 
 function FunctionalSQL() {
-	this.source = [];
+	this.sources = [];
 	this.result = [];
 }
 
@@ -29,7 +29,9 @@ function buildFunctionalSQLPrototype() {
 
 	function select() {}
 
-	function from() {}
+	function from() {
+		this.sources = argumentsToArray(arguments);
+	}
 
 	function where() {}
 
@@ -43,6 +45,10 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+}
+
+function argumentsToArray(args) {
+	return Array.prototype.slice.call(args);
 }
 
 function chinify(obj, methodName) {
