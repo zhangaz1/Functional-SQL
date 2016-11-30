@@ -10,6 +10,7 @@ var query = createQuery;
 function FunctionalSQL() {
 	this.sources = [];
 	this.selector = null;
+	this.filters = [];
 	this.result = [];
 }
 
@@ -37,7 +38,11 @@ function buildFunctionalSQLPrototype() {
 			this.sources = argumentsToArray(arguments);
 	}
 
-	function where() {}
+	function where(filter) {
+		if(filter) { // is function check
+			this.filters.push(filter);
+		}
+	}
 
 	function orderBy() {}
 
@@ -46,6 +51,10 @@ function buildFunctionalSQLPrototype() {
 	function having() {}
 
 	function execute() {
+		this.filters.forEach(function(filter) {
+			this.result = this.result.filter(filter);
+		}, this);
+
 		if(this.selector) {
 			this.result = this.result.map(this.selector);
 		}
