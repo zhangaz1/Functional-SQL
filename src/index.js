@@ -1,6 +1,6 @@
 var splitor = ',';
 var chainMethods = 'select,from,where,orderBy,groupBy,having'.split(splitor);
-var onceMethods = 'select,from,orderBy,groupBy,having'.split(splitor);
+var onceMethods = 'select,from,orderBy,groupBy'.split(splitor);
 
 buildFunctionalSQLPrototype();
 
