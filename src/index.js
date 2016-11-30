@@ -16,13 +16,24 @@ function FunctionalSQL() {
 }
 
 function buildFunctionalSQLPrototype() {
-	FunctionalSQL.prototype.select = select;
-	FunctionalSQL.prototype.from = from;
-	FunctionalSQL.prototype.where = where;
-	FunctionalSQL.prototype.orderBy = orderBy;
-	FunctionalSQL.prototype.groupBy = groupBy;
-	FunctionalSQL.prototype.having = having;
-	FunctionalSQL.prototype.execute = execute;
+	var proto = FunctionalSQL.prototype;
+
+	proto.select = select;
+	proto.doSelect = doSelect;
+
+	proto.from = from;
+
+	proto.where = where;
+	proto.doFilter = doFilter;
+
+	proto.orderBy = orderBy;
+
+	proto.groupBy = groupBy;
+	proto.doGroup = doGroup;
+
+	proto.having = having;
+
+	proto.execute = execute;
 
 	chainMethods.forEach(function(methodName) {
 		chinify(FunctionalSQL.prototype, methodName);
@@ -33,6 +44,12 @@ function buildFunctionalSQLPrototype() {
 	function select(selector) {
 		if(isFunction(selector)) {
 			this.selector = selector;
+		}
+	}
+
+	function doSelect() {
+		if(this.selector) {
+			this.result = this.result.map(this.selector);
 		}
 	}
 
@@ -47,6 +64,12 @@ function buildFunctionalSQLPrototype() {
 		}
 	}
 
+	function doFilter() {
+		this.filters.forEach(function(filter) {
+			this.result = this.result.filter(filter);
+		}, this);
+	}
+
 	function orderBy() {}
 
 	function groupBy(groupBy) {
@@ -55,20 +78,26 @@ function buildFunctionalSQLPrototype() {
 		}
 	}
 
+	function doGroup() {
+		if(this.groupBys.length > 0) {
+			this.result = group(this.result, this.groupBys);
+		}
+	}
+
 	function having() {}
 
 	function execute() {
-		this.filters.forEach(function(filter) {
-			this.result = this.result.filter(filter);
-		}, this);
-
-		if(this.selector) {
-			this.result = this.result.map(this.selector);
-		}
+		this.doFilter();
+		this.doSelect();
+		this.doGroup();
 
 		return this.result;
 	}
 
+}
+
+function group(data, groupBys) {
+	return data;
 }
 
 function isFunction(fun) {
