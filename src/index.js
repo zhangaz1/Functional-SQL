@@ -259,15 +259,15 @@ function argumentsToArray(args) {
 }
 
 function chinify(obj, methodName) {
-	decorate(obj, methodName, function wrap() {
-		wrap.origin.apply(this, arguments);
+	decorate(obj, methodName, function() {
+		arguments.callee.origin.apply(this, arguments);
 		return this;
 	});
 }
 
 function onceify(obj, methodName) {
-	decorate(obj, methodName, function wrap() {
-		var result = wrap.origin.apply(this, arguments);
+	decorate(obj, methodName, function() {
+		var result = arguments.callee.origin.apply(this, arguments);
 		this[methodName] = createDuplicateCallErrorHandler(methodName.toUpperCase());
 		return result;
 	});
