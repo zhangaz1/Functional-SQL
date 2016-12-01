@@ -4,6 +4,32 @@ Array.prototype.findIndex = function(fn) {
 	return -1;
 };
 
+function chinify(obj, methodName) {
+	decorate(obj, methodName, function() {
+		arguments.callee.origin.apply(this, arguments);
+		return this;
+	});
+}
+
+function onceify(obj, methodName) {
+	decorate(obj, methodName, function() {
+		var result = arguments.callee.origin.apply(this, arguments);
+		this[methodName] = createDuplicateCallErrorHandler(methodName.toUpperCase());
+		return result;
+	});
+}
+
+function createDuplicateCallErrorHandler(key) {
+	return function() {
+		throw new Error('Duplicate ' + key);
+	}
+}
+
+function decorate(obj, methodName, wrap) {
+	wrap.origin = obj[methodName];
+	obj[methodName] = wrap;
+}
+
 function product(a, arr) {
 	if(arr.length == 0) return a;
 	let b = arr[0],
@@ -13,6 +39,10 @@ function product(a, arr) {
 	return product(res, arr.slice(1));
 }
 
+var splitor = ',';
+var chainMethods = 'select,from,where,orderBy,groupBy,having'.split(splitor);
+var onceMethods = 'select,from,orderBy,groupBy'.split(splitor);
+
 function query() {
 	let s = {
 			where: [],
@@ -20,26 +50,18 @@ function query() {
 		},
 		q = {
 			select: function(fn) {
-				if(s.select) throw new Error('Duplicate SELECT');
 				s.select = fn || (x => x);
-				return q;
 			},
 			from: function(a, ...arr) {
-				if(s.from) throw new Error('Duplicate FROM');
 				s.from = () => arr.length == 0 ? a : product(a.map(x => [x]), arr);
-				return q;
 			},
 			where: function(...fns) {
 				s.where.push(x => fns.some(fn => fn(x)));
-				return q;
 			},
 			orderBy: function(fn) {
-				if(s.orderBy) throw new Error('Duplicate ORDERBY');
 				s.orderBy = fn;
-				return q;
 			},
 			groupBy: function(...fns) {
-				if(s.groupBy) throw new Error('Duplicate GROUPBY');
 				s.groupBy = a => a.reduce((res, row) => {
 					let a = res,
 						b;
@@ -52,11 +74,9 @@ function query() {
 					a.push(row);
 					return res;
 				}, []);
-				return q;
 			},
 			having: function(...fns) {
 				s.having.push(x => fns.some(fn => fn(x)));
-				return q;
 			},
 			execute: function() {
 				let res = s.from ? s.from() : [];
@@ -67,5 +87,9 @@ function query() {
 				return s.select ? res.map(s.select) : res;
 			}
 		};
+
+	chainMethods.forEach(methodName => chinify(q, methodName));
+	onceMethods.forEach(methodName => onceify(q, methodName));
+
 	return q;
 }
