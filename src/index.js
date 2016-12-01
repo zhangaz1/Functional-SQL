@@ -64,8 +64,8 @@ function buildQueryCorePrototype() {
 		this.where();
 		this.group();
 		this.having();
-		this.select();
 		this.orderBy();
+		this.select();
 
 		return this.result;
 	}
