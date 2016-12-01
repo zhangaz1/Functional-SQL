@@ -9,13 +9,15 @@ var query = createQuery;
 // return void(0);
 
 function FunctionalSQL() {
-	this.sources = [];
+	this.result =
+		this.sources = [];
+
 	this.selector = null;
 	this.filters = [];
 	this.havings = [];
 	this.groupBys = [];
 	this.orderByor = null;
-	this.result = [];
+
 }
 
 function buildFunctionalSQLPrototype() {
@@ -64,11 +66,16 @@ function buildFunctionalSQLPrototype() {
 
 	function from() {
 		var sources = argumentsToArray(arguments);
+
+		if(sources.length < 1) {
+			return;
+		}
+
 		this.result =
 			this.sources = (
 				sources.length === 1 ?
 				sources[0].slice() :
-				sources
+				joinSources(sources)
 			);
 	}
 
@@ -141,6 +148,34 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+}
+
+function joinSources(sources) {
+	var source = sources.shift();
+
+	var result = source.map(function(dataObj) {
+		return [dataObj];
+	});
+
+	while(source = sources.shift()) {
+		result = joinSource(result, source);
+	}
+
+	return result;
+}
+
+function joinSource(mainSource, appendSource) {
+	var result = [];
+
+	mainSource.forEach(function(mainItem) {
+		appendSource.forEach(function(appendItem) {
+			let newItem = mainItem.slice();
+			newItem.push(appendItem);
+			result.push(newItem);
+		});
+	});
+
+	return result;
 }
 
 function mergeFilters(filters) {
