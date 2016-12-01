@@ -2,13 +2,14 @@ var splitor = ',';
 var chainMethods = 'select,from,where,orderBy,groupBy,having'.split(splitor);
 var onceMethods = 'select,from,orderBy,groupBy'.split(splitor);
 
+buildQueryCorePrototype();
 buildFunctionalSQLPrototype();
 
 var query = createQuery;
 
 // return void(0);
 
-function FunctionalSQL() {
+function QueryCore() {
 	this.result =
 		this.sources = [];
 
@@ -17,29 +18,69 @@ function FunctionalSQL() {
 	this.havings = [];
 	this.groupBys = [];
 	this.orderByor = null;
+}
 
+function FunctionalSQL() {
+	this.core = new QueryCore();
+}
+
+function buildQueryCorePrototype() {
+	var proto = QueryCore.prototype;
+
+	proto.select = select;
+	proto.where = where;
+	proto.orderBy = orderBy;
+	proto.group = group;
+	proto.having = having;
+	proto.execute = execute;
+
+	return void(0);
+
+	function select() {
+		if(this.selector) {
+			this.result = this.result.map(this.selector);
+		}
+	}
+
+	function where() {
+		this.result = doFilter(this.result, this.wheres);
+	}
+
+	function orderBy() {
+		if(this.orderByor) {
+			this.result = this.result.sort(this.orderByor);
+		}
+	}
+
+	function group() {
+		this.result = doGroup(this.result, this.groupBys);
+	}
+
+	function having() {
+		this.result = doFilter(this.result, this.havings);
+	}
+
+	function execute() {
+		this.where();
+		this.group();
+		this.having();
+		this.select();
+		this.orderBy();
+
+		return this.result;
+	}
 }
 
 function buildFunctionalSQLPrototype() {
 	var proto = FunctionalSQL.prototype;
 
 	proto.select = select;
-	proto.doSelect = doSelect;
-
 	proto.from = from;
 
 	proto.where = where;
-	proto.doWhere = doWhere;
-
 	proto.orderBy = orderBy;
-	proto.doOrderBy = doOrderBy;
-
 	proto.groupBy = groupBy;
-	proto.doGroup = doGroup;
-
 	proto.having = having;
-	proto.doHaving = doHaving;
-
 	proto.execute = execute;
 
 	chainMethods.forEach(methodName => chinify(proto, methodName));
@@ -49,13 +90,7 @@ function buildFunctionalSQLPrototype() {
 
 	function select(selector) {
 		if(isFunction(selector)) {
-			this.selector = selector;
-		}
-	}
-
-	function doSelect() {
-		if(this.selector) {
-			this.result = this.result.map(this.selector);
+			this.core.selector = selector;
 		}
 	}
 
@@ -66,8 +101,8 @@ function buildFunctionalSQLPrototype() {
 			return;
 		}
 
-		this.result =
-			this.sources = (
+		this.core.result =
+			this.core.sources = (
 				sources.length === 1 ?
 				sources[0].slice() :
 				joinSources(sources)
@@ -75,51 +110,26 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function where() {
-		collectFilters(arguments, this.wheres);
-	}
-
-	function doWhere() {
-		this.result = doFilter(this.result, this.wheres);
+		collectFilters(arguments, this.core.wheres);
 	}
 
 	function orderBy(orderBy) {
 		if(isFunction(orderBy)) {
-			this.orderByor = orderBy;
-		}
-	}
-
-	function doOrderBy() {
-		if(this.orderByor) {
-			this.result = this.result.sort(this.orderByor);
+			this.core.orderByor = orderBy;
 		}
 	}
 
 	function groupBy() {
-		collectHanders(arguments, this.groupBys);
-	}
-
-	function doGroup() {
-		this.result = group(this.result, this.groupBys);
+		collectHanders(arguments, this.core.groupBys);
 	}
 
 	function having() {
-		collectFilters(arguments, this.havings);
-	}
-
-	function doHaving() {
-		this.result = doFilter(this.result, this.havings);
+		collectFilters(arguments, this.core.havings);
 	}
 
 	function execute() {
-		this.doWhere();
-		this.doGroup();
-		this.doHaving();
-		this.doSelect();
-		this.doOrderBy();
-
-		return this.result;
+		return this.core.execute();
 	}
-
 }
 
 function doFilter(list, filters) {
@@ -194,7 +204,7 @@ function getMethodsFromArguments(args) {
 	return argumentsToArray(args);
 }
 
-function group(datas, groupBys) {
+function doGroup(datas, groupBys) {
 	if(groupBys.length < 1) {
 		return datas;
 	}
