@@ -29,7 +29,7 @@ function buildFunctionalSQLPrototype() {
 	proto.from = from;
 
 	proto.where = where;
-	proto.doFilter = doFilter;
+	proto.doWhere = doWhere;
 
 	proto.orderBy = orderBy;
 	proto.doOrderBy = doOrderBy;
@@ -42,13 +42,8 @@ function buildFunctionalSQLPrototype() {
 
 	proto.execute = execute;
 
-	chainMethods.forEach(function(methodName) {
-		chinify(proto, methodName);
-	});
-
-	onceMethods.forEach(function(methodName) {
-		onceify(proto, methodName);
-	});
+	chainMethods.forEach(methodName => chinify(proto, methodName));
+	onceMethods.forEach(methodName => onceify(proto, methodName));
 
 	return void(0);
 
@@ -84,13 +79,13 @@ function buildFunctionalSQLPrototype() {
 		if(filters.length > 0) {
 			var filter = filters.length === 1 ?
 				filters[0] :
-				mergeFilters(filters);
+				mergeOrFilters(filters);
 
 			this.filters.push(filter);
 		}
 	}
 
-	function doFilter() {
+	function doWhere() {
 		this.filters.forEach(function(filter) {
 			this.result = this.result.filter(filter);
 		}, this);
@@ -139,7 +134,7 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function execute() {
-		this.doFilter();
+		this.doWhere();
 		this.doGroup();
 		this.doHaving();
 		this.doSelect();
@@ -153,9 +148,7 @@ function buildFunctionalSQLPrototype() {
 function joinSources(sources) {
 	var source = sources.shift();
 
-	var result = source.map(function(dataObj) {
-		return [dataObj];
-	});
+	var result = source.map(dataObj => [dataObj]);
 
 	while(source = sources.shift()) {
 		result = joinSource(result, source);
@@ -178,14 +171,17 @@ function joinSource(mainSource, appendSource) {
 	return result;
 }
 
-function mergeFilters(filters) {
+function mergeOrFilters(filters) {
 	return function() {
-		for(var i = 0; i < filters.length; i++) {
-			if(filters[i].apply(null, arguments)) {
-				return true;
-			}
-		}
-		return false;
+		var args = arguments;
+		return filters.some(filter => filter.apply(null, arguments));
+	}
+}
+
+function mergeAndFilters(filters) {
+	return function() {
+		var args = arguments;
+		return filters.every(filter => filter.apply(null, args));
 	}
 }
 
