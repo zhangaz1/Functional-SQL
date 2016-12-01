@@ -76,11 +76,9 @@ function buildFunctionalSQLPrototype() {
 
 	function where() {
 		var wheres = getMethodsFromArguments(arguments);
-		if(wheres.length > 0) {
-			var filter = wheres.length === 1 ?
-				wheres[0] :
-				mergeOrFilters(wheres);
 
+		if(wheres.length > 0) {
+			var filter = mergeOrFilters(wheres);
 			this.wheres.push(filter);
 		}
 	}
@@ -118,11 +116,10 @@ function buildFunctionalSQLPrototype() {
 	function having() {
 		var havings = getMethodsFromArguments(arguments);
 
-		havings.forEach(function(having) {
-			if(isFunction(having)) {
-				this.havings.push(having);
-			}
-		}, this);
+		if(havings.length > 0) {
+			var filter = mergeOrFilters(havings);
+			this.havings.push(filter);
+		}
 	}
 
 	function doHaving() {
@@ -173,17 +170,21 @@ function joinSource(mainSource, appendSource) {
 }
 
 function mergeOrFilters(filters) {
-	return function() {
-		var args = arguments;
-		return filters.some(filter => filter.apply(null, arguments));
-	}
+	return filters.length === 1 ?
+		filters[0] :
+		function() {
+			var args = arguments;
+			return filters.some(filter => filter.apply(null, arguments));
+		};
 }
 
 function mergeAndFilters(filters) {
-	return function() {
-		var args = arguments;
-		return filters.every(filter => filter.apply(null, args));
-	}
+	return filters.length === 1 ?
+		filters[0] :
+		function() {
+			var args = arguments;
+			return filters.every(filter => filter.apply(null, args));
+		};
 }
 
 function getMethodsFromArguments(args) {
