@@ -227,8 +227,8 @@ function argumentsToArray(args) {
 }
 
 function chinify(obj, methodName) {
-	wrap.origin = obj[methodName];
-	obj[methodName] = wrap;
+	decorate(obj, methodName, wrap);
+
 	return void(0);
 
 	function wrap() {
@@ -238,8 +238,8 @@ function chinify(obj, methodName) {
 }
 
 function onceify(obj, methodName) {
-	wrap.origin = obj[methodName];
-	obj[methodName] = wrap;
+	decorate(obj, methodName, wrap);
+
 	return void(0);
 
 	function wrap() {
@@ -247,6 +247,11 @@ function onceify(obj, methodName) {
 		this[methodName] = createDuplicateCallErrorHandler(methodName.toUpperCase());
 		return result;
 	}
+}
+
+function decorate(obj, methodName, wrap) {
+	wrap.origin = obj[methodName];
+	obj[methodName] = wrap;
 }
 
 function createDuplicateCallErrorHandler(key) {
