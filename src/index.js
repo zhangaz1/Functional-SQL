@@ -259,26 +259,18 @@ function argumentsToArray(args) {
 }
 
 function chinify(obj, methodName) {
-	decorate(obj, methodName, wrap);
-
-	return void(0);
-
-	function wrap() {
+	decorate(obj, methodName, function wrap() {
 		wrap.origin.apply(this, arguments);
 		return this;
-	}
+	});
 }
 
 function onceify(obj, methodName) {
-	decorate(obj, methodName, wrap);
-
-	return void(0);
-
-	function wrap() {
+	decorate(obj, methodName, function wrap() {
 		var result = wrap.origin.apply(this, arguments);
 		this[methodName] = createDuplicateCallErrorHandler(methodName.toUpperCase());
 		return result;
-	}
+	});
 }
 
 function decorate(obj, methodName, wrap) {
