@@ -13,7 +13,7 @@ function FunctionalSQL() {
 		this.sources = [];
 
 	this.selector = null;
-	this.filters = [];
+	this.wheres = [];
 	this.havings = [];
 	this.groupBys = [];
 	this.orderByor = null;
@@ -75,20 +75,18 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function where() {
-		var filters = getMethodsFromArguments(arguments);
-		if(filters.length > 0) {
-			var filter = filters.length === 1 ?
-				filters[0] :
-				mergeOrFilters(filters);
+		var wheres = getMethodsFromArguments(arguments);
+		if(wheres.length > 0) {
+			var filter = wheres.length === 1 ?
+				wheres[0] :
+				mergeOrFilters(wheres);
 
-			this.filters.push(filter);
+			this.wheres.push(filter);
 		}
 	}
 
 	function doWhere() {
-		this.filters.forEach(function(filter) {
-			this.result = this.result.filter(filter);
-		}, this);
+		this.result = doFilter(this.result, this.wheres);
 	}
 
 	function orderBy(orderBy) {
@@ -128,9 +126,7 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function doHaving() {
-		this.havings.forEach(function(having) {
-			this.result = this.result.filter(having);
-		}, this);
+		this.result = doFilter(this.result, this.havings);
 	}
 
 	function execute() {
@@ -143,6 +139,11 @@ function buildFunctionalSQLPrototype() {
 		return this.result;
 	}
 
+}
+
+function doFilter(list, filters) {
+	var filter = mergeAndFilters(filters);
+	return list.filter(filter);
 }
 
 function joinSources(sources) {
