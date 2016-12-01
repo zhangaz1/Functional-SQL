@@ -95,13 +95,7 @@ function buildFunctionalSQLPrototype() {
 	}
 
 	function groupBy() {
-		var groupBys = getMethodsFromArguments(arguments);
-
-		for(let groupBy of groupBys) {
-			if(isFunction(groupBy)) {
-				this.groupBys.push(groupBy);
-			}
-		}
+		collectHanders(arguments, this.groupBys);
 	}
 
 	function doGroup() {
@@ -157,6 +151,16 @@ function joinSource(mainSource, appendSource) {
 	});
 
 	return result;
+}
+
+function collectHanders(args, handlerCollection) {
+	var handlers = getMethodsFromArguments(args);
+
+	for(let handler of handlers) {
+		if(isFunction(handler)) {
+			handlerCollection.push(handler);
+		}
+	}
 }
 
 function collectFilters(args, filterCollection) {
