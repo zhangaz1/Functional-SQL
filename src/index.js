@@ -102,11 +102,11 @@ function buildFunctionalSQLPrototype() {
 	function groupBy() {
 		var groupBys = getMethodsFromArguments(arguments);
 
-		groupBys.forEach(function(groupBy) {
+		for(let groupBy of groupBys) {
 			if(isFunction(groupBy)) {
 				this.groupBys.push(groupBy);
 			}
-		}, this);
+		}
 	}
 
 	function doGroup() {
